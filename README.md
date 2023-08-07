@@ -1,3 +1,19 @@
+## Important Links
+
+[Find more info on the Karaoke App HERE](https://docs.switchboard.audio/docs/examples/karaoke-app/)
+
+[Find more info on the Switchboard SDK HERE](https://docs.switchboard.audio/)
+
+## Setup
+
+Before opening the project please run:
+
+```
+bash scripts/setup.sh
+```
+
+This will download the necessary libraries to build the project.
+
 ## About Karaoke App
 
 *Karaoke apps rank among the most popular audio-related applications within the mobile app marketplace. Who doesn't like a good karaoke party?*
@@ -92,3 +108,9 @@ idMixer-->idOutput(OutputNode)
 ```
 
 The same audio graph will be used with the **Offline Graph Renderer** to render the final mix to an output file which can be shared.
+
+## Important Links
+
+[Find more info on the Karaoke App HERE](https://docs.switchboard.audio/docs/examples/karaoke-app/)
+
+[Find more info on the Switchboard SDK HERE](https://docs.switchboard.audio/)
