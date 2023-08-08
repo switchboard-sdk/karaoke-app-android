@@ -1,8 +1,8 @@
 ## Important Links
 
-[Find more info on the Karaoke App HERE](https://docs.switchboard.audio/docs/examples/karaoke-app/)
+<a href="https://docs.switchboard.audio/docs/examples/karaoke-app/" target="_blank">Find more info on the Karaoke App HERE</a>
 
-[Find more info on the Switchboard SDK HERE](https://docs.switchboard.audio/)
+<a href="https://docs.switchboard.audio/" target="_blank">Find more info on the Switchboard SDK HERE</a>
 
 ## Setup
 
@@ -111,6 +111,6 @@ The same audio graph will be used with the **Offline Graph Renderer** to render 
 
 ## Important Links
 
-[Find more info on the Karaoke App HERE](https://docs.switchboard.audio/docs/examples/karaoke-app/)
+<a href="https://docs.switchboard.audio/docs/examples/karaoke-app/" target="_blank">Find more info on the Karaoke App HERE</a>
 
-[Find more info on the Switchboard SDK HERE](https://docs.switchboard.audio/)
+<a href="https://docs.switchboard.audio/" target="_blank">Find more info on the Switchboard SDK HERE</a>
