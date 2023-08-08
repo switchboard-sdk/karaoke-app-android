@@ -3,12 +3,13 @@ package com.synervoz.karaokeapp.songlist
 import android.content.Context
 import com.synervoz.switchboard.sdk.Codec
 import com.synervoz.switchboard.sdk.audioengine.AudioEngine
+import com.synervoz.switchboard.sdk.audioengine.PerformanceMode
 import com.synervoz.switchboard.sdk.audiograph.AudioGraph
 import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
 
 class SongListAudioEngine {
-    val audioEngine = AudioEngine()
+    val audioEngine = AudioEngine(performanceMode = PerformanceMode.LOW_LATENCY)
     val audioGraph = AudioGraph()
     val audioPlayerNode = AudioPlayerNode()
 

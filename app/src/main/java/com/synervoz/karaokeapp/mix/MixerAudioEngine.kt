@@ -4,6 +4,7 @@ import android.content.Context
 import com.synervoz.switchboard.sdk.Codec
 import com.synervoz.switchboard.sdk.SwitchboardSDK
 import com.synervoz.switchboard.sdk.audioengine.AudioEngine
+import com.synervoz.switchboard.sdk.audioengine.PerformanceMode
 import com.synervoz.switchboard.sdk.audiograph.AudioGraph
 import com.synervoz.switchboard.sdk.audiograph.OfflineGraphRenderer
 import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
@@ -17,7 +18,7 @@ import kotlin.math.max
 
 class MixerAudioEngine {
 
-    val audioEngine = AudioEngine()
+    val audioEngine = AudioEngine(performanceMode = PerformanceMode.LOW_LATENCY)
 
     val audioGraphToRender = AudioGraph()
 

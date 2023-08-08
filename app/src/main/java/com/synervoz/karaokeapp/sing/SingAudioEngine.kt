@@ -4,6 +4,7 @@ import android.content.Context
 import com.synervoz.switchboard.sdk.Codec
 import com.synervoz.switchboard.sdk.SwitchboardSDK
 import com.synervoz.switchboard.sdk.audioengine.AudioEngine
+import com.synervoz.switchboard.sdk.audioengine.PerformanceMode
 import com.synervoz.switchboard.sdk.audiograph.AudioGraph
 import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
 import com.synervoz.switchboard.sdk.audiographnodes.BusSplitterNode
@@ -14,7 +15,7 @@ import com.synervoz.switchboard.sdk.audiographnodes.VUMeterNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
 
 class SingAudioEngine {
-    val audioEngine = AudioEngine(enableInput = true)
+    val audioEngine = AudioEngine(enableInput = true, performanceMode = PerformanceMode.LOW_LATENCY)
     val audioGraph = AudioGraph()
     val internalAudioGraph = AudioGraph()
     val subgraphNode = SubgraphProcessorNode()
