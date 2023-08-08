@@ -1,3 +1,5 @@
+# Karaoke App - Android
+
 ## Important Links
 
 <a href="https://docs.switchboard.audio/docs/examples/karaoke-app/" target="_blank">Find more info on the Karaoke App HERE</a>
@@ -22,7 +24,7 @@ This will download the necessary libraries to build the project.
 
 *Fortunately, the process of creating a karaoke app is significantly simplified when using the SwitchboardSDK. This example will illustrate how you can easily construct one by essentially connecting various audio nodes.*
 
-## Karaoke App
+## Features
 
 The app has the following **features**:
 
