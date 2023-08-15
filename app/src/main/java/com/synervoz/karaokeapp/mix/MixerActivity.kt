@@ -103,8 +103,8 @@ class MixerActivity : AppCompatActivity() {
             mixerAudioEngine.enableCompressor(isEnabled)
         }
 
-        binding.autotune.setOnCheckedChangeListener { compoundButton, isEnabled ->
-            mixerAudioEngine.enableAutotune(isEnabled)
+        binding.avpc.setOnCheckedChangeListener { compoundButton, isEnabled ->
+            mixerAudioEngine.enableAutomaticVocalPitchCorrection(isEnabled)
         }
     }
 

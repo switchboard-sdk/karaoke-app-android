@@ -11,7 +11,7 @@ import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
 import com.synervoz.switchboard.sdk.audiographnodes.GainNode
 import com.synervoz.switchboard.sdk.audiographnodes.MixerNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
-import com.synervoz.switchboardsuperpowered.audiographnodes.AutotuneNode
+import com.synervoz.switchboardsuperpowered.audiographnodes.AutomaticVocalPitchCorrectionNode
 import com.synervoz.switchboardsuperpowered.audiographnodes.CompressorNode
 import com.synervoz.switchboardsuperpowered.audiographnodes.ReverbNode
 import kotlin.math.max
@@ -30,7 +30,7 @@ class MixerAudioEngine {
     val voiceGainNode = GainNode()
     val reverbNode = ReverbNode()
     val compressorNode = CompressorNode()
-    val autotuneNode = AutotuneNode()
+    val avpcNode = AutomaticVocalPitchCorrectionNode()
 
     private var mixedFilePath = SwitchboardSDK.getTemporaryDirectoryPath() + "mix.wav"
 
@@ -42,12 +42,12 @@ class MixerAudioEngine {
         audioGraphToRender.addNode(voiceGainNode)
         audioGraphToRender.addNode(reverbNode)
         audioGraphToRender.addNode(compressorNode)
-        audioGraphToRender.addNode(autotuneNode)
+        audioGraphToRender.addNode(avpcNode)
         audioGraphToRender.connect(musicPlayer, musicGainNode)
         audioGraphToRender.connect(musicGainNode, mixerNode)
         audioGraphToRender.connect(voicePlayer, voiceGainNode)
-        audioGraphToRender.connect(voiceGainNode, autotuneNode)
-        audioGraphToRender.connect(autotuneNode, compressorNode)
+        audioGraphToRender.connect(voiceGainNode, avpcNode)
+        audioGraphToRender.connect(avpcNode, compressorNode)
         audioGraphToRender.connect(compressorNode, reverbNode)
         audioGraphToRender.connect(reverbNode, mixerNode)
         audioGraphToRender.connect(mixerNode, audioGraphToRender.outputNode)
@@ -139,7 +139,7 @@ class MixerAudioEngine {
         compressorNode.isEnabled = enable
     }
 
-    fun enableAutotune(enable: Boolean) {
-        autotuneNode.isEnabled = enable
+    fun enableAutomaticVocalPitchCorrection(enable: Boolean) {
+        avpcNode.isEnabled = enable
     }
 }
