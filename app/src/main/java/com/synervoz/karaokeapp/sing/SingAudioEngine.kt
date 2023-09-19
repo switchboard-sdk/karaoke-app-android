@@ -14,8 +14,8 @@ import com.synervoz.switchboard.sdk.audiographnodes.SubgraphProcessorNode
 import com.synervoz.switchboard.sdk.audiographnodes.VUMeterNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
 
-class SingAudioEngine {
-    val audioEngine = AudioEngine(enableInput = true, performanceMode = PerformanceMode.LOW_LATENCY)
+class SingAudioEngine(context: Context) {
+    val audioEngine = AudioEngine(context = context, microphoneEnabled = true, performanceMode = PerformanceMode.LOW_LATENCY)
     val audioGraph = AudioGraph()
     val internalAudioGraph = AudioGraph()
     val subgraphNode = SubgraphProcessorNode()

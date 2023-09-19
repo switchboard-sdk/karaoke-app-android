@@ -24,7 +24,7 @@ class MixerActivity : AppCompatActivity() {
     lateinit var song: Song
     lateinit var recordingPath: String
     lateinit var binding: ActivityMixBinding
-    val mixerAudioEngine = MixerAudioEngine()
+    lateinit var mixerAudioEngine: MixerAudioEngine
     private val uiScope = CoroutineScope(Dispatchers.Main)
     private var frameCallback: Choreographer.FrameCallback? = null
 
@@ -35,7 +35,7 @@ class MixerActivity : AppCompatActivity() {
 
         song = intent.getSerializableExtra("SONG") as Song
         recordingPath = intent.getStringExtra("RECORDING_PATH")!!
-
+        mixerAudioEngine = MixerAudioEngine(this)
 
         uiScope.launch {
             binding.loadingIndicator.visibility = View.VISIBLE

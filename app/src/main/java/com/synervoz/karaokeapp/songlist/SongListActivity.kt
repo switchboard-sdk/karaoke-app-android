@@ -47,7 +47,7 @@ class SongListActivity : AppCompatActivity() {
     }
 
     private fun initAudioEngine() {
-        engine = SongListAudioEngine()
+        engine = SongListAudioEngine(this)
         engine.start()
     }
 
