@@ -62,7 +62,7 @@ class SingActivity : AppCompatActivity() {
     }
 
     fun initAudioEngine() {
-        audioEngine = SingAudioEngine()
+        audioEngine = SingAudioEngine(this)
         audioEngine.startAudioEngine()
 
         uiScope.launch {

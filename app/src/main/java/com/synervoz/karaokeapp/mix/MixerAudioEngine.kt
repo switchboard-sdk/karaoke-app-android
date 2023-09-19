@@ -16,9 +16,9 @@ import com.synervoz.switchboardsuperpowered.audiographnodes.CompressorNode
 import com.synervoz.switchboardsuperpowered.audiographnodes.ReverbNode
 import kotlin.math.max
 
-class MixerAudioEngine {
+class MixerAudioEngine(context: Context) {
 
-    val audioEngine = AudioEngine(performanceMode = PerformanceMode.LOW_LATENCY)
+    val audioEngine = AudioEngine(context = context, performanceMode = PerformanceMode.LOW_LATENCY)
 
     val audioGraphToRender = AudioGraph()
 

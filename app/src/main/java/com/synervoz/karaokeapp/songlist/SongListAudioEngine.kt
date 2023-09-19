@@ -8,8 +8,8 @@ import com.synervoz.switchboard.sdk.audiograph.AudioGraph
 import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
 
-class SongListAudioEngine {
-    val audioEngine = AudioEngine(performanceMode = PerformanceMode.LOW_LATENCY)
+class SongListAudioEngine(context: Context) {
+    val audioEngine = AudioEngine(context = context, performanceMode = PerformanceMode.LOW_LATENCY)
     val audioGraph = AudioGraph()
     val audioPlayerNode = AudioPlayerNode()
 
