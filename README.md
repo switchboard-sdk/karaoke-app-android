@@ -26,7 +26,7 @@ This will download the necessary libraries to build the project.
 
 ## Demo Video
 
-Check out the demo video on YouTube: https://youtu.be/m_3n92AtfWc
+Check out the demo video on <a href="https://youtu.be/m_3n92AtfWc" target="_blank">YouTube</a> 
 
 ## Features
 
