@@ -6,6 +6,8 @@
 
 <a href="https://docs.switchboard.audio/" target="_blank">Find more info on the Switchboard SDK HERE</a>
 
+ <a href="https://youtu.be/m_3n92AtfWc" target="_blank">YouTube Demo Video</a> 
+
 ## Setup
 
 Before opening the project please run:
@@ -23,10 +25,6 @@ This will download the necessary libraries to build the project.
 *The idea behind these apps is straightforward, yet their development can become highly complex without a fundamental understanding of audio programming. For example making sure that the backing track is in sync with the recording is not straightforward task.*
 
 *Fortunately, the process of creating a karaoke app is significantly simplified when using the SwitchboardSDK. This example will illustrate how you can easily construct one by essentially connecting various audio nodes.*
-
-## Demo Video
-
-Check out the demo video on <a href="https://youtu.be/m_3n92AtfWc" target="_blank">YouTube</a> 
 
 ## Features
 
