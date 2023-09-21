@@ -24,6 +24,10 @@ This will download the necessary libraries to build the project.
 
 *Fortunately, the process of creating a karaoke app is significantly simplified when using the SwitchboardSDK. This example will illustrate how you can easily construct one by essentially connecting various audio nodes.*
 
+## Demo Video
+
+Check out the demo video on YouTube: https://youtu.be/m_3n92AtfWc
+
 ## Features
 
 The app has the following **features**:
