@@ -31,7 +31,7 @@ class SongListActivity : AppCompatActivity() {
         binding = SongListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        SwitchboardSDK.initialize("Your client ID", "Your client secret")
+        SwitchboardSDK.initialize(this, "Your client ID", "Your client secret")
         SuperpoweredExtension.initialize("ExampleLicenseKey-WillExpire-OnNextUpdate")
 
         adapter = SongAdapter(
@@ -47,7 +47,7 @@ class SongListActivity : AppCompatActivity() {
     }
 
     private fun initAudioEngine() {
-        engine = SongListAudioEngine()
+        engine = SongListAudioEngine(this)
         engine.start()
     }
 
