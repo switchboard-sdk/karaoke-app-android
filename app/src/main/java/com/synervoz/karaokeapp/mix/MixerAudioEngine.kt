@@ -60,8 +60,8 @@ class MixerAudioEngine(context: Context) {
     fun renderMix(): String {
         val sampleRate =
             max(musicPlayer.getSourceSampleRate(), voicePlayer.getSourceSampleRate())
-        musicPlayer.position = 0.0
-        voicePlayer.position = 0.0
+        musicPlayer.stop()
+        voicePlayer.stop()
         musicPlayer.play()
         voicePlayer.play()
         val offlineGraphRenderer = OfflineGraphRenderer()

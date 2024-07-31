@@ -14,10 +14,14 @@ import androidx.core.content.ContextCompat
 import com.synervoz.karaokeapp.data.Song
 import com.synervoz.karaokeapp.databinding.ActivitySingBinding
 import com.synervoz.karaokeapp.mix.MixerActivity
+import com.synervoz.switchboard.sdk.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.LinkedList
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.math.roundToInt
 
 
@@ -27,6 +31,10 @@ class SingActivity : AppCompatActivity() {
     private var frameCallback: Choreographer.FrameCallback? = null
     private val uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var currentSong: Song
+    private var mLatencyUpdater: Timer? = null
+    private val UPDATE_LATENCY_EVERY_MILLIS: Long = 1000
+    private val roundTripLatencyList = LinkedList<Double>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +57,8 @@ class SingActivity : AppCompatActivity() {
         binding.playPauseButton.setOnClickListener {
             if (audioEngine.isPlaying()) {
                 stopFrameCallback()
+                stopLatencyUpdater()
+                val a = calculateAverageRoundTripLatency()
                 audioEngine.finish()
                 val intent = Intent(this, MixerActivity::class.java)
                 intent.putExtra("SONG", currentSong)
@@ -57,13 +67,15 @@ class SingActivity : AppCompatActivity() {
                 finish()
             } else {
                 binding.playPauseButton.text = "Finish"
-                audioEngine.playAndRecord()            }
+                audioEngine.playAndRecord()
+            }
         }
     }
 
     fun initAudioEngine() {
         audioEngine = SingAudioEngine(this)
         audioEngine.startAudioEngine()
+        setupLatencyUpdater()
 
         uiScope.launch {
             binding.loadingIndicator.visibility = View.VISIBLE
@@ -118,6 +130,50 @@ class SingActivity : AppCompatActivity() {
         binding.peak.progress = (audioEngine.vuMeterNode.peak * binding.peak.max).toInt()
     }
 
+    private fun setupLatencyUpdater() {
+        // Update the latency every 1s
+        val latencyUpdateTask: TimerTask = object : TimerTask() {
+            override fun run() {
+                if (audioEngine.isLatencyDetectionSupported()) {
+                    val outputLatency: Double = audioEngine.getCurrentOutputLatencyMs().let { if (it >= 0) it else 0.0 }
+                    val inputLatency: Double = audioEngine.getCurrentInputLatencyMs().let { if (it >= 0) it else 0.0 }
+
+                    addRoundTripLatencyValue(inputLatency + outputLatency)
+                } else {
+                    Logger.debug("Only supported in AAudio (API 26+)")
+                }
+            }
+        }
+        mLatencyUpdater = Timer()
+        mLatencyUpdater!!.schedule(latencyUpdateTask, 0, UPDATE_LATENCY_EVERY_MILLIS)
+    }
+
+    fun stopLatencyUpdater() {
+        mLatencyUpdater?.cancel()
+    }
+
+    fun addRoundTripLatencyValue(latency: Double) {
+        // for simplicity we only keep the last X values. We keep the last few instead the first,
+        // since the latency might have changed after the audio engine have started because of a root
+        // change (plugged in headset, etc. )
+        latency.toString()
+        if (roundTripLatencyList.size == 3) {
+            roundTripLatencyList.removeFirst()
+        }
+        roundTripLatencyList.addLast(latency)
+    }
+
+    fun calculateAverageRoundTripLatency(): Double {
+        val avg = if (roundTripLatencyList.isEmpty()) {
+            0.0
+        } else {
+            roundTripLatencyList.sum().toDouble() / roundTripLatencyList.size
+        }
+
+        Logger.info("Average latency: $avg")
+        return avg
+    }
+
     fun checkMicrophonePermission(): Boolean {
 
         if (ContextCompat.checkSelfPermission(
@@ -153,5 +209,7 @@ class SingActivity : AppCompatActivity() {
         stopFrameCallback()
         audioEngine.stopAudioEngine()
         audioEngine.close()
+        mLatencyUpdater?.cancel()
+
     }
 }

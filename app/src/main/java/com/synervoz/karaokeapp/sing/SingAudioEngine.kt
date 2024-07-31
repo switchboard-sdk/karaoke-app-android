@@ -100,4 +100,16 @@ class SingAudioEngine(context: Context) {
         multiChannelToMonoNode.close()
         vuMeterNode.close()
     }
+
+    fun isLatencyDetectionSupported(): Boolean {
+        return audioEngine.isLatencyDetectionSupported()
+    }
+
+    fun getCurrentOutputLatencyMs(): Double {
+        return audioEngine.getCurrentOutputLatencyMs()
+    }
+
+    fun getCurrentInputLatencyMs(): Double {
+        return audioEngine.getCurrentInputLatencyMs()
+    }
 }
