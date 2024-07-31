@@ -14,6 +14,10 @@ import androidx.core.content.ContextCompat
 import com.synervoz.karaokeapp.data.Song
 import com.synervoz.karaokeapp.databinding.ActivitySingBinding
 import com.synervoz.karaokeapp.mix.MixerActivity
+import com.synervoz.switchboard.sdk.Codec
+import com.synervoz.switchboard.sdk.audiograph.AudioGraph
+import com.synervoz.switchboard.sdk.audiograph.OfflineGraphRenderer
+import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
 import com.synervoz.switchboard.sdk.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +38,7 @@ class SingActivity : AppCompatActivity() {
     private var mLatencyUpdater: Timer? = null
     private val UPDATE_LATENCY_EVERY_MILLIS: Long = 1000
     private val roundTripLatencyList = LinkedList<Double>()
+    private  var offsetMs: Double = 0.0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,19 +63,39 @@ class SingActivity : AppCompatActivity() {
             if (audioEngine.isPlaying()) {
                 stopFrameCallback()
                 stopLatencyUpdater()
-                val a = calculateAverageRoundTripLatency()
+                calculateOffset()
                 audioEngine.finish()
-                val intent = Intent(this, MixerActivity::class.java)
-                intent.putExtra("SONG", currentSong)
-                intent.putExtra("RECORDING_PATH", audioEngine.recordingFilePath)
-                startActivity(intent)
-                finish()
+                startMixer()
             } else {
                 binding.playPauseButton.text = "Finish"
                 audioEngine.playAndRecord()
             }
         }
     }
+
+    private fun startMixer() {
+
+//        val trimmedRecordingPath = trimOffset(audioEngine.recordingFilePath)
+
+        val intent = Intent(this, MixerActivity::class.java)
+        intent.putExtra("SONG", currentSong)
+        intent.putExtra("RECORDING_PATH", audioEngine.recordingFilePath)
+        intent.putExtra("RECORDING_OFFSET", offsetMs)
+        startActivity(intent)
+        finish()
+    }
+
+//    private fun trimOffset(origFilePath: String): String {
+//        val offlineGraphRenderer = OfflineGraphRenderer()
+//        val player = AudioPlayerNode()
+//        val graph = AudioGraph()
+//        player.load(origFilePath, Codec.createFromFileName(origFilePath))
+//        player.startPosition
+//
+//        offlineGraphRenderer.close()
+//        graph.close()
+//        player.close()
+//    }
 
     fun initAudioEngine() {
         audioEngine = SingAudioEngine(this)
@@ -170,7 +195,6 @@ class SingActivity : AppCompatActivity() {
             roundTripLatencyList.sum().toDouble() / roundTripLatencyList.size
         }
 
-        Logger.info("Average latency: $avg")
         return avg
     }
 
@@ -186,6 +210,15 @@ class SingActivity : AppCompatActivity() {
             return false
         }
         return true
+    }
+
+    private fun calculateOffset() {
+        val avgRoundTripLatency = calculateAverageRoundTripLatency()
+        val bufferLatency = audioEngine.getInputBufferSizeMs() + audioEngine.getOutputBufferSizeMs()
+        offsetMs = avgRoundTripLatency + bufferLatency
+        Logger.info("Buffer latency: $bufferLatency")
+        Logger.info("Average round trip latency: $avgRoundTripLatency")
+        Logger.info("Total recording offset ms: $offsetMs")
     }
 
     override fun onRequestPermissionsResult(

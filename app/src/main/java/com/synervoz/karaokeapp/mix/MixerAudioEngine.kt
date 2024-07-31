@@ -109,6 +109,10 @@ class MixerAudioEngine(context: Context) {
         voicePlayer.load(recordingPath, Codec.createFromFileName(recordingPath))
     }
 
+    fun setRecordingOffset(offsetMs: Double) {
+        voicePlayer.startPosition = offsetMs / 1000
+    }
+
     fun getSongDurationInSeconds() : Double {
         return musicPlayer.getDuration()
     }

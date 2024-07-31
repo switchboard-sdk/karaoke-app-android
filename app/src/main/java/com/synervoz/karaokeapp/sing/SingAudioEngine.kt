@@ -112,4 +112,10 @@ class SingAudioEngine(context: Context) {
     fun getCurrentInputLatencyMs(): Double {
         return audioEngine.getCurrentInputLatencyMs()
     }
+
+    fun getInputBufferSizeMs() = audioEngine.getInputBufferSizeMs()
+
+    fun getOutputBufferSizeMs() = audioEngine.getOutputBufferSizeMs()
+
+
 }
