@@ -4,6 +4,7 @@ import android.content.Context
 import com.synervoz.switchboard.sdk.Codec
 import com.synervoz.switchboard.sdk.SwitchboardSDK
 import com.synervoz.switchboard.sdk.audioengine.AudioEngine
+import com.synervoz.switchboard.sdk.audioengine.MicInputPreset
 import com.synervoz.switchboard.sdk.audioengine.PerformanceMode
 import com.synervoz.switchboard.sdk.audiograph.AudioGraph
 import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
@@ -15,7 +16,10 @@ import com.synervoz.switchboard.sdk.audiographnodes.VUMeterNode
 import com.synervoz.switchboard.sdk.utils.AssetLoader
 
 class SingAudioEngine(context: Context) {
-    val audioEngine = AudioEngine(context = context, microphoneEnabled = true, performanceMode = PerformanceMode.LOW_LATENCY)
+    val audioEngine = AudioEngine(context = context, microphoneEnabled = true,
+        // Use these presets in order to achieve the lowest latency
+        performanceMode = PerformanceMode.LOW_LATENCY,
+        micInputPreset = MicInputPreset.VOICE_RECOGNITION)
     val audioGraph = AudioGraph()
     val internalAudioGraph = AudioGraph()
     val subgraphNode = SubgraphProcessorNode()
@@ -24,6 +28,7 @@ class SingAudioEngine(context: Context) {
     val splitterNode = BusSplitterNode()
     val multiChannelToMonoNode = MultiChannelToMonoNode()
     val vuMeterNode = VUMeterNode()
+    val fileFormat = Codec.WAV
 
     init {
         vuMeterNode.smoothingDurationMs = 100.0f
@@ -44,10 +49,9 @@ class SingAudioEngine(context: Context) {
         audioGraph.connect(subgraphNode, audioGraph.outputNode)
     }
 
-    var recordingFilePath = SwitchboardSDK.getTemporaryDirectoryPath() + "recording.wav"
+    var recordingFilePath = SwitchboardSDK.getTemporaryDirectoryPath() + "recording." + fileFormat.fileExtension
 
     fun startAudioEngine() {
-        internalAudioGraph.start()
         audioEngine.start(audioGraph)
     }
 
@@ -58,6 +62,7 @@ class SingAudioEngine(context: Context) {
     fun playAndRecord() {
         audioPlayerNode.play()
         recorderNode.start()
+        internalAudioGraph.start()
     }
 
     fun loadSong(context: Context, songName: String) {
