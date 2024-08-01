@@ -75,8 +75,6 @@ class SingActivity : AppCompatActivity() {
 
     private fun startMixer() {
 
-//        val trimmedRecordingPath = trimOffset(audioEngine.recordingFilePath)
-
         val intent = Intent(this, MixerActivity::class.java)
         intent.putExtra("SONG", currentSong)
         intent.putExtra("RECORDING_PATH", audioEngine.recordingFilePath)
@@ -85,17 +83,6 @@ class SingActivity : AppCompatActivity() {
         finish()
     }
 
-//    private fun trimOffset(origFilePath: String): String {
-//        val offlineGraphRenderer = OfflineGraphRenderer()
-//        val player = AudioPlayerNode()
-//        val graph = AudioGraph()
-//        player.load(origFilePath, Codec.createFromFileName(origFilePath))
-//        player.startPosition
-//
-//        offlineGraphRenderer.close()
-//        graph.close()
-//        player.close()
-//    }
 
     fun initAudioEngine() {
         audioEngine = SingAudioEngine(this)
