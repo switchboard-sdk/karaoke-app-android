@@ -3,7 +3,7 @@
 set -eu
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-SDK_VERSION="2.1.0"
+SDK_VERSION="2.1.1"
 
 rm -rf "${SCRIPT_DIR}/../libs"
 mkdir -p "${SCRIPT_DIR}/../libs"
