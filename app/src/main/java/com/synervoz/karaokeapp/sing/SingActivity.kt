@@ -14,10 +14,18 @@ import androidx.core.content.ContextCompat
 import com.synervoz.karaokeapp.data.Song
 import com.synervoz.karaokeapp.databinding.ActivitySingBinding
 import com.synervoz.karaokeapp.mix.MixerActivity
+import com.synervoz.switchboard.sdk.Codec
+import com.synervoz.switchboard.sdk.audiograph.AudioGraph
+import com.synervoz.switchboard.sdk.audiograph.OfflineGraphRenderer
+import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
+import com.synervoz.switchboard.sdk.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.LinkedList
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.math.roundToInt
 
 
@@ -27,6 +35,11 @@ class SingActivity : AppCompatActivity() {
     private var frameCallback: Choreographer.FrameCallback? = null
     private val uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var currentSong: Song
+    private var mLatencyUpdater: Timer? = null
+    private val UPDATE_LATENCY_EVERY_MILLIS: Long = 1000
+    private val roundTripLatencyList = LinkedList<Double>()
+    private  var offsetMs: Double = 0.0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,21 +62,32 @@ class SingActivity : AppCompatActivity() {
         binding.playPauseButton.setOnClickListener {
             if (audioEngine.isPlaying()) {
                 stopFrameCallback()
+                stopLatencyUpdater()
+                calculateOffset()
                 audioEngine.finish()
-                val intent = Intent(this, MixerActivity::class.java)
-                intent.putExtra("SONG", currentSong)
-                intent.putExtra("RECORDING_PATH", audioEngine.recordingFilePath)
-                startActivity(intent)
-                finish()
+                startMixer()
             } else {
                 binding.playPauseButton.text = "Finish"
-                audioEngine.playAndRecord()            }
+                audioEngine.playAndRecord()
+            }
         }
     }
+
+    private fun startMixer() {
+
+        val intent = Intent(this, MixerActivity::class.java)
+        intent.putExtra("SONG", currentSong)
+        intent.putExtra("RECORDING_PATH", audioEngine.recordingFilePath)
+        intent.putExtra("RECORDING_OFFSET", offsetMs)
+        startActivity(intent)
+        finish()
+    }
+
 
     fun initAudioEngine() {
         audioEngine = SingAudioEngine(this)
         audioEngine.startAudioEngine()
+        setupLatencyUpdater()
 
         uiScope.launch {
             binding.loadingIndicator.visibility = View.VISIBLE
@@ -118,6 +142,49 @@ class SingActivity : AppCompatActivity() {
         binding.peak.progress = (audioEngine.vuMeterNode.peak * binding.peak.max).toInt()
     }
 
+    private fun setupLatencyUpdater() {
+        // Update the latency every 1s
+        val latencyUpdateTask: TimerTask = object : TimerTask() {
+            override fun run() {
+                if (audioEngine.isLatencyDetectionSupported()) {
+                    val outputLatency: Double = audioEngine.getCurrentOutputLatencyMs().let { if (it >= 0) it else 0.0 }
+                    val inputLatency: Double = audioEngine.getCurrentInputLatencyMs().let { if (it >= 0) it else 0.0 }
+
+                    addRoundTripLatencyValue(inputLatency + outputLatency)
+                } else {
+                    Logger.debug("Only supported in AAudio (API 26+)")
+                }
+            }
+        }
+        mLatencyUpdater = Timer()
+        mLatencyUpdater!!.schedule(latencyUpdateTask, 0, UPDATE_LATENCY_EVERY_MILLIS)
+    }
+
+    fun stopLatencyUpdater() {
+        mLatencyUpdater?.cancel()
+    }
+
+    fun addRoundTripLatencyValue(latency: Double) {
+        // for simplicity we only keep the last X values. We keep the last few instead the first,
+        // since the latency might have changed after the audio engine have started because of a root
+        // change (plugged in headset, etc. )
+        latency.toString()
+        if (roundTripLatencyList.size == 3) {
+            roundTripLatencyList.removeFirst()
+        }
+        roundTripLatencyList.addLast(latency)
+    }
+
+    fun calculateAverageRoundTripLatency(): Double {
+        val avg = if (roundTripLatencyList.isEmpty()) {
+            0.0
+        } else {
+            roundTripLatencyList.sum().toDouble() / roundTripLatencyList.size
+        }
+
+        return avg
+    }
+
     fun checkMicrophonePermission(): Boolean {
 
         if (ContextCompat.checkSelfPermission(
@@ -130,6 +197,15 @@ class SingActivity : AppCompatActivity() {
             return false
         }
         return true
+    }
+
+    private fun calculateOffset() {
+        val avgRoundTripLatency = calculateAverageRoundTripLatency()
+        val bufferLatency = audioEngine.getInputBufferSizeMs() + audioEngine.getOutputBufferSizeMs()
+        offsetMs = avgRoundTripLatency + bufferLatency
+        Logger.info("Buffer latency: $bufferLatency")
+        Logger.info("Average round trip latency: $avgRoundTripLatency")
+        Logger.info("Total recording offset ms: $offsetMs")
     }
 
     override fun onRequestPermissionsResult(
@@ -153,5 +229,7 @@ class SingActivity : AppCompatActivity() {
         stopFrameCallback()
         audioEngine.stopAudioEngine()
         audioEngine.close()
+        mLatencyUpdater?.cancel()
+
     }
 }

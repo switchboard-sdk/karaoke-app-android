@@ -25,14 +25,14 @@ class MixerAudioEngine(context: Context) {
     val musicPlayer = AudioPlayerNode()
     val voicePlayer = AudioPlayerNode()
     val mixerNode = MixerNode()
-    val offlineGraphRenderer = OfflineGraphRenderer()
     val musicGainNode = GainNode()
     val voiceGainNode = GainNode()
     val reverbNode = ReverbNode()
     val compressorNode = CompressorNode()
     val avpcNode = AutomaticVocalPitchCorrectionNode()
+    val fileFormat = Codec.WAV
 
-    private var mixedFilePath = SwitchboardSDK.getTemporaryDirectoryPath() + "mix.wav"
+    private var mixedFilePath = SwitchboardSDK.getTemporaryDirectoryPath() + "mix." + fileFormat.fileExtension
 
     init {
         audioGraphToRender.addNode(musicPlayer)
@@ -52,6 +52,7 @@ class MixerAudioEngine(context: Context) {
         audioGraphToRender.connect(reverbNode, mixerNode)
         audioGraphToRender.connect(mixerNode, audioGraphToRender.outputNode)
         audioEngine.start(audioGraphToRender)
+        audioGraphToRender.stop()
     }
 
     fun isPlaying() = musicPlayer.isPlaying
@@ -59,13 +60,15 @@ class MixerAudioEngine(context: Context) {
     fun renderMix(): String {
         val sampleRate =
             max(musicPlayer.getSourceSampleRate(), voicePlayer.getSourceSampleRate())
-        musicPlayer.position = 0.0
-        voicePlayer.position = 0.0
+        musicPlayer.stop()
+        voicePlayer.stop()
         musicPlayer.play()
         voicePlayer.play()
+        val offlineGraphRenderer = OfflineGraphRenderer()
         offlineGraphRenderer.setSampleRate(sampleRate)
         offlineGraphRenderer.setMaxNumberOfSecondsToRender(musicPlayer.getDuration())
-        offlineGraphRenderer.processGraph(audioGraphToRender, mixedFilePath, Codec.WAV)
+        offlineGraphRenderer.processGraph(audioGraphToRender, mixedFilePath, fileFormat)
+        offlineGraphRenderer.close()
 
         return mixedFilePath
     }
@@ -73,9 +76,11 @@ class MixerAudioEngine(context: Context) {
     fun play() {
         musicPlayer.play()
         voicePlayer.play()
+        audioGraphToRender.start()
     }
 
     fun pause() {
+        audioGraphToRender.stop()
         musicPlayer.pause()
         voicePlayer.pause()
     }
@@ -102,6 +107,10 @@ class MixerAudioEngine(context: Context) {
 
     fun loadRecording(recordingPath: String) {
         voicePlayer.load(recordingPath, Codec.createFromFileName(recordingPath))
+    }
+
+    fun setRecordingOffset(offsetMs: Double) {
+        voicePlayer.startPosition = offsetMs / 1000
     }
 
     fun getSongDurationInSeconds() : Double {

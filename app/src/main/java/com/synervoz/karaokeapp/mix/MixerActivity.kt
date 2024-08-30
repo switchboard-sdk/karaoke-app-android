@@ -23,6 +23,7 @@ import kotlin.math.roundToInt
 class MixerActivity : AppCompatActivity() {
     lateinit var song: Song
     lateinit var recordingPath: String
+    var recordingOffset: Double = 0.0
     lateinit var binding: ActivityMixBinding
     lateinit var mixerAudioEngine: MixerAudioEngine
     private val uiScope = CoroutineScope(Dispatchers.Main)
@@ -37,12 +38,14 @@ class MixerActivity : AppCompatActivity() {
 
         song = intent.getSerializableExtra("SONG") as Song
         recordingPath = intent.getStringExtra("RECORDING_PATH")!!
+        recordingOffset = intent.getDoubleExtra("RECORDING_OFFSET", 0.0)
 
         uiScope.launch {
             binding.loadingIndicator.visibility = View.VISIBLE
             withContext(Dispatchers.IO) {
                 mixerAudioEngine.loadSong(this@MixerActivity, song.fileName)
                 mixerAudioEngine.loadRecording(recordingPath)
+                mixerAudioEngine.setRecordingOffset(recordingOffset)
             }
             binding.songTitle.text = song.displayName
             binding.duration.text =

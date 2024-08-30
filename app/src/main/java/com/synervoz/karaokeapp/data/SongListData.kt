@@ -3,19 +3,19 @@ package com.synervoz.karaokeapp.data
 object SongListData {
     fun getList() = listOf(
         Song(
-            "House_of_the_Rising_Sun.mp3",
+            "House_of_the_Rising_Sun.wav",
             displayName = "House of the Rising Sun",
             lyrics = house_lyrics,
             duration = "4m 20s",
         ),
         Song(
-            "Amazing_Grace.mp3",
+            "Amazing_Grace.wav",
             displayName = "Amazing Grace",
             lyrics = amazing_grace_lyrics,
             duration = "3m 01s",
         ),
         Song(
-            "La_Bamba.mp3",
+            "La_Bamba.wav",
             displayName = "La Bamba",
             lyrics = la_bamba_lyrics,
             duration = "2m 19s",
