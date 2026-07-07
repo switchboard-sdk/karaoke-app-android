@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -17,17 +16,10 @@
         android:theme="@style/Theme.KaraokeApp"
         tools:targetApi="31">
         <activity
-            android:name=".mix.MixerActivity"
+            android:name=".MainActivity"
             android:screenOrientation="portrait"
-            android:exported="false" />
-        <activity
-            android:name=".sing.SingActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-        <activity
-            android:name=".songlist.SongListActivity"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.KaraokeApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

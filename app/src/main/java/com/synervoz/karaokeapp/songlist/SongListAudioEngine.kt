@@ -1,38 +1,84 @@
 package com.synervoz.karaokeapp.songlist
 
 import android.content.Context
-import com.synervoz.switchboard.sdk.Codec
-import com.synervoz.switchboard.sdk.audioengine.AudioEngine
-import com.synervoz.switchboard.sdk.audioengine.PerformanceMode
-import com.synervoz.switchboard.sdk.audiograph.AudioGraph
-import com.synervoz.switchboard.sdk.audiographnodes.AudioPlayerNode
-import com.synervoz.switchboard.sdk.utils.AssetLoader
+import com.synervoz.switchboard.sdk.Switchboard
+import java.io.File
 
-class SongListAudioEngine(context: Context) {
-    val audioEngine = AudioEngine(context = context, performanceMode = PerformanceMode.LOW_LATENCY)
-    val audioGraph = AudioGraph()
-    val audioPlayerNode = AudioPlayerNode()
+/**
+ * Song-list preview engine built on the SwitchboardSDK v3 JSON graph API.
+ *
+ * The graph is a single `AudioPlayer` routed straight to the output node:
+ *
+ * ```
+ * player (AudioPlayer) -> outputNode
+ * ```
+ */
+class SongListAudioEngine(private val context: Context) {
 
-    init {
-        audioGraph.addNode(audioPlayerNode)
-        audioGraph.connect(audioPlayerNode, audioGraph.outputNode)
-    }
+    private var engineId: String = ""
 
     fun start() {
-        audioEngine.start(audioGraph)
+        val result = Switchboard.createEngine(GRAPH_JSON)
+        if (result.isError) {
+            throw RuntimeException("Failed to create audio engine: ${result.error}")
+        }
+        engineId = result.value!!
+        Switchboard.callAction(engineId, "start")
     }
 
     fun stop() {
-        audioEngine.stop()
+        if (engineId.isEmpty()) return
+        Switchboard.callAction(engineId, "stop")
+        Switchboard.destroyEngine(engineId)
+        engineId = ""
     }
 
-    fun loadSong(context: Context, songName: String) {
-        audioPlayerNode.load(AssetLoader.load(context, songName), Codec.createFromFileName(songName))
+    val isPlaying: Boolean
+        get() {
+            val result = Switchboard.getValue(PLAYER, "isPlaying")
+            return if (result.isError) false else (result.value as? Boolean ?: false)
+        }
+
+    fun loadSong(assetName: String) {
+        val path = copyAssetToCache(assetName).absolutePath
+        Switchboard.callAction(PLAYER, "load", mapOf("audioFilePath" to path))
     }
 
-    fun close() {
-        audioEngine.close()
-        audioGraph.close()
-        audioPlayerNode.close()
+    fun play() {
+        Switchboard.callAction(PLAYER, "play")
+    }
+
+    fun pause() {
+        Switchboard.callAction(PLAYER, "pause")
+    }
+
+    private fun copyAssetToCache(assetName: String): File {
+        val outFile = File(context.cacheDir, assetName)
+        if (!outFile.exists()) {
+            context.assets.open(assetName).use { input ->
+                outFile.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+        return outFile
+    }
+
+    companion object {
+        private const val PLAYER = "player"
+
+        private val GRAPH_JSON = """
+            {
+              "type": "Realtime",
+              "config": {
+                "graph": {
+                  "nodes": [
+                    { "id": "player", "type": "AudioPlayer" }
+                  ],
+                  "connections": [
+                    { "sourceNode": "player", "destinationNode": "outputNode" }
+                  ]
+                }
+              }
+            }
+        """.trimIndent()
     }
 }
