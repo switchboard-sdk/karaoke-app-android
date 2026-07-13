@@ -10,13 +10,13 @@
 
 ## Setup
 
-Before opening the project please run:
+No manual setup step is required. The SwitchboardSDK and its Superpowered extension are declared as Gradle dependencies (see `gradle/libs.versions.toml`) and resolved automatically from Maven when you build. Just open the project in Android Studio, or run:
 
 ```
-bash scripts/setup.sh
+./gradlew assembleDebug
 ```
 
-This will download the necessary libraries to build the project.
+The app targets **SwitchboardSDK 3.2.4** and is built with **Jetpack Compose** for the UI and the **v3 JSON audio-graph API** for the audio engines.
 
 ## About Karaoke App
 
@@ -41,28 +41,30 @@ It consists of the following **screens**:
 - ***Sing:*** Play the selected song and record your voice over it
 - ***Mixing:*** Apply effects on your voice and use the volume mixer to achieve perfect balance between your voice and the song. Export and share the rendered file.
 
+Each audio graph is described declaratively as JSON and created via `Switchboard.createEngine`; nodes are then controlled at runtime by their string id through `callAction` / `setValue` / `getValue`.
+
 You can find more info about the screens below.
 
 ### Song List Screen
 
 The Song List screen contains a list of available songs.
 
-You can play and pause and different songs, and press the "Sing" button when you have selected your favorite.
+You can play and pause and different songs, and press the "Select" button when you have selected your favorite.
 
 <img src="./img/karaoke-app-song-list-screen.jpg" width="320" />
 
 #### Audio Graph
 
-The audio graph for the Song List screen contains a player node that is routed to the speaker output:
+A single player routed to the output (node id: node type):
 
 ```mermaid
 flowchart TD
-idSong[Song - AudioPlayerNode]-->idOutput(OutputNode)
+idSong["player: AudioPlayer"]-->idOutput(outputNode)
 ```
 
 ### Sing Screen
 
-The Sing screen consists of a progress bar for the backing track, a start / finish recording button and a lyrics view.
+The Sing screen consists of a progress bar for the backing track, a start / finish recording button, an input-level meter and a lyrics view.
 
 When you are ready to sing, press the Start button. This will start the playback of the backing track, and your vocal input is recorded.
 Press finish when you want to stop singing. This will bring you to the Mixer screen.
@@ -73,16 +75,15 @@ On this screen please use wired headphones for the best experience!
 
 #### Audio Graph
 
-To make sure that the recording is in sync with the audio playback we use a `SubgraphProcessorNode`. This ensures that the RecorderNode and the AudioPlayerNode for the backing track is started at the same time.
+The microphone is captured (via the graph's `inputNode`, enabled with `microphoneEnabled`), split, and fed to a `Recorder` and — downmixed to mono — to a `VUMeter` for the input-level display. The backing track plays through a separate `AudioPlayer` to the output; the microphone is never routed to the speaker.
 
 ```mermaid
 flowchart TD
-idInput(Vocal - InputNode)-->idSubgraph
-subgraph idSubgraph[Record and Play - SubgraphProcessorNode]
-idInputSubgraph(Subgraph - InputNode)-->idRecorder[RecorderNode]
-idPlayer[Song - AudioPlayerNode]-->idOutputSubgraph(Subgraph - OutputNode)
-end
-idSubgraph-->idOutput(OutputNode)
+idInput(inputNode)-->idSplitter["inputSplitter: BusSplitter"]
+idSplitter-->idRecorder["recorder: Recorder"]
+idSplitter-->idMono["micToMono: MultiChannelToMono"]
+idMono-->idVU["vuMeter: VUMeter"]
+idPlayer["player: AudioPlayer"]-->idOutput(outputNode)
 ```
 
 ### Mixer Screen
@@ -101,17 +102,17 @@ When you are done with the mixing and editing you can save and share your record
 
 ```mermaid
 flowchart TD
-idSong[Song - AudioPlayerNode]-->idSongGain[GainNode]
-idSongGain-->idMixer[MixerNode]
-idVocal[Voice - AudioPlayerNode]-->idVoiceGain[GainNode]
-idVoiceGain-->idAvpc[AutomaticVocalPitchCorrectionNode]
-idAvpc-->idCompressor[CompressorNode]
-idCompressor-->idReverb[ReverbNode]
-idReverb-->idMixer[MixerNode]
-idMixer-->idOutput(OutputNode)
+idSong["musicPlayer: AudioPlayer"]-->idSongGain["musicGain: Gain"]
+idSongGain-->idMixer["mixer: Mixer"]
+idVoice["voicePlayer: AudioPlayer"]-->idVoiceGain["voiceGain: Gain"]
+idVoiceGain-->idAvpc["avpc: Superpowered.AutomaticVocalPitchCorrection"]
+idAvpc-->idCompressor["compressor: Superpowered.Compressor"]
+idCompressor-->idReverb["reverb: Superpowered.Reverb"]
+idReverb-->idMixer
+idMixer-->idOutput(outputNode)
 ```
 
-The same audio graph will be used with the **Offline Graph Renderer** to render the final mix to an output file which can be shared.
+The same audio graph is rendered offline to an output file (via an `Offline` engine) for the Export feature.
 
 ## Important Links
 
